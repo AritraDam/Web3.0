@@ -6,22 +6,53 @@
 // global scope, and execute the script.
 const hre = require("hardhat");
 
+async function getBalances(address) {
+  const balanceBigInt = await hre.ethers.provider.getBalance(address);
+  return hre.ethers.utils.formatEther(balanceBigInt);
+}
+
+async function consoleBalance(addressess) {
+  let counter = 0;
+  for (const address of addressess) {
+    console.log(`Address ${counter} balance:`, await getBalances(address));
+    counter++;
+  }
+}
+
+async function consoleMemos(memos) {
+  for (const memo of memos) {
+    const timestamp = memo.timeStamp;
+    const name = memo.name;
+    const _from = memo._from;
+    const message = memo.message;
+
+    console.log(`At: ${timestamp} ,Name: ${name} ,Address: ${_from} ,
+    Message: ${message}`);
+  }
+}
+
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+  const [owner, form1, form2, form3] = await hre.ethers.getSigners();
+  const chai = await hre.ethers.getContractFactory("chai");
+  const contract = await chai.deploy(); //instance of contract 
 
-  const lockedAmount = hre.ethers.utils.parseEther("0.001");
+  await contract.deployed();
 
-  const Lock = await hre.ethers.getContractFactory("Lock");
-  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+  console.log("Address of Contract:", contract.address);
 
-  await lock.deployed();
+  const addressess = [owner.address, form1.address, form2.address, form3.address];
+  console.log("Before Buying chai");
+  await consoleBalance(addressess);
 
-  console.log(
-    `Lock with ${ethers.utils.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.address}`
-  );
+  const amount = { value: hre.ethers.utils.parseEther("1") };
+  await contract.connect(form1).payChai("from1", "Very Nice Chai", amount);
+  await contract.connect(form2).payChai("from2", "Very Nice Chai2", amount);
+  await contract.connect(form3).payChai("from3", "Very Nice Chai3", amount);
+  console.log("After Buying chai");
+  await consoleBalance(addressess);
+
+  const memos = await contract.getMemos();
+  consoleMemos(memos);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
