@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import abi from "./contracts/chai.json";
 import './App.css';
+import Buy from './components/Buy';
 function App() {
   const [state, setState] = useState({
     provider: null,
@@ -28,10 +29,10 @@ function App() {
     }
     connectWallet();
   }, []);
-  console.log(state);
+  // console.log(state);
   return (
     <div className="App">
-
+      <Buy state={state}></Buy>
     </div>
   );
 }
