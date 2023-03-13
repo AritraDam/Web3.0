@@ -1,3 +1,5 @@
+import { ethers } from "ethers";
+
 const Buy = ({ state }) => {
 
     const buyChai = async (event) => {
@@ -7,6 +9,11 @@ const Buy = ({ state }) => {
         const message = document.querySelector("#message").value;
 
         console.log(name, message, contract);
+
+        const amount = { value: ethers.utils.parseEther("0.001") };
+        const transaction = await contract.payChai(name, message, amount);
+        await transaction.wait();
+        console.log("transaction is done");
     };
 
     return (
